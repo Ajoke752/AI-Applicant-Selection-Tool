@@ -1,0 +1,10 @@
+
+fastapi
+uvicorn[standard]
+pydantic
+pytest
+pandas
+# optional helpers
+python-multipart
+python-dotenv
+# ...existing code...
