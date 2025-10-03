@@ -1,7 +1,7 @@
 import React from "react";
 import { Award } from "lucide-react";
 
-export default function CandidateCard({ candidate, rank, onOpen, }) {
+export default function CandidateCard({ candidate, rank, onOpen }) {
   const skills = (candidate.skills || []).slice(0, 6);
   return (
     <div className="bg-white rounded-2xl shadow-md p-5 flex items-center justify-between hover:shadow-lg transition">
@@ -49,7 +49,6 @@ export default function CandidateCard({ candidate, rank, onOpen, }) {
         >
           View
         </button>
-
       </div>
     </div>
   );

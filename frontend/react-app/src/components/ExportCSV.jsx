@@ -5,12 +5,16 @@ function toCsv(data = []) {
   if (!data.length) return "";
   const keys = Array.from(new Set(data.flatMap((d) => Object.keys(d))));
   const rows = [keys.join(",")].concat(
-    data.map((d) => keys.map((k) => {
-      const val = d[k];
-      if (Array.isArray(val)) return `"${val.join(";")}"`;
-      if (val === null || val === undefined) return "";
-      return `"${String(val).replace(/"/g, '""')}"`;
-    }).join(","))
+    data.map((d) =>
+      keys
+        .map((k) => {
+          const val = d[k];
+          if (Array.isArray(val)) return `"${val.join(";")}"`;
+          if (val === null || val === undefined) return "";
+          return `"${String(val).replace(/"/g, '""')}"`;
+        })
+        .join(",")
+    )
   );
   return rows.join("\n");
 }
@@ -28,7 +32,10 @@ export default function ExportCSV({ data = [], filename = "export.csv" }) {
   }
 
   return (
-    <button onClick={download} className="flex items-center gap-2 bg-white border px-3 py-2 rounded-md hover:shadow">
+    <button
+      onClick={download}
+      className="flex items-center gap-2 bg-white border px-3 py-2 rounded-md hover:shadow"
+    >
       <Download className="w-4 h-4" /> Export CSV
     </button>
   );
