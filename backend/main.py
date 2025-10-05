@@ -4,7 +4,12 @@ from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
 from pathlib import Path
 import json
+from openai import OpenAI
+import os
+from dotenv import load_dotenv
 
+load_dotenv()
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 app = FastAPI(title="AI Applicant Selection Tool - Ranking API")
 
 # CORS so frontend (Vite) can call the API during dev
@@ -90,4 +95,100 @@ def rank_sample():
 def score_applicant(applicant: Applicant):
     # single-applicant scoring (keeps compatibility with earlier endpoint)
     scored = score_single(applicant.dict(), [], {"skills": 0.5, "experience": 0.3, "education": 0.2})
-    return {"name": scored.get("name"), "score": scored.get("score")}
+    return {"name": scored.get("name"), "score": scored.get("score")
+            }
+class AIScoreRequest(BaseModel):
+    candidate: Applicant
+    job_description: str
+
+@app.post("/ai-score")
+def ai_score(req: AIScoreRequest):
+    """
+    Use GPT to analyze a candidate and return a smart score + summary
+    """
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "You are an AI recruiter assistant."},
+                {"role": "user", "content": f"""
+                Job Description: {req.job_description}
+
+                Candidate:
+                Name: {req.candidate.name}
+                Skills: {req.candidate.skills}
+                Experience: {req.candidate.years_experience} years
+                Education: {req.candidate.education}
+                Notes: {req.candidate.notes}
+
+                Please return JSON like:
+                {{ "score": number (0-100), "summary": "short evaluation" }}
+                """}
+            ],
+            temperature=0.3,
+        )
+
+        raw = response.choices[0].message.content.strip()
+
+        import json
+        data = json.loads(raw)  # parse JSON from AI
+        return data
+    except Exception as e:
+        return {"error": str(e)}
+    
+# Simple persistent storage of AI scores
+    DATA_FILE = Path("ai_scores.json")
+
+def load_scores():
+    if DATA_FILE.exists():
+        with open(DATA_FILE, "r") as f:
+            return json.load(f)
+    return {}
+
+def save_scores(scores):
+    with open(DATA_FILE, "w") as f:
+        json.dump(scores, f, indent=2)
+
+
+@app.post("/ai-score")
+def ai_score(req: AIScoreRequest):
+    scores = load_scores()
+    key = req.candidate.email or req.candidate.name
+
+    # Return cached result if available
+    if key in scores:
+        return scores[key]
+
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "You are an AI recruiter assistant."},
+                {"role": "user", "content": f"""
+                Job Description: {req.job_description}
+
+                Candidate:
+                Name: {req.candidate.name}
+                Skills: {req.candidate.skills}
+                Experience: {req.candidate.years_experience} years
+                Education: {req.candidate.education}
+                Notes: {req.candidate.notes}
+
+                Please return JSON like:
+                {{ "score": 85, "summary": "Strong React developer with ML skills" }}
+                """}
+            ],
+            temperature=0.3,
+        )
+
+        raw = response.choices[0].message.content.strip()
+        data = json.loads(raw)
+
+        # Save and return
+        scores[key] = data
+        save_scores(scores)
+
+        return data
+    except Exception as e:
+        return {"error": str(e)}
+        

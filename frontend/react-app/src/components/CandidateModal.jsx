@@ -1,78 +1,49 @@
-import React from "react";
+import { useEffect, useState } from "react";
 
 export default function CandidateModal({ candidate, onClose }) {
+  const [aiData, setAiData] = useState(null);
+
+  useEffect(() => {
+    if (candidate) {
+      fetch("http://127.0.0.1:8000/ai-score", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          candidate,
+          job_description: "Frontend Developer with React, Tailwind, and API experience"
+        }),
+      })
+        .then((res) => res.json())
+        .then((data) => setAiData(data))
+        .catch(() => setAiData({ error: "AI failed" }));
+    }
+  }, [candidate]);
+
   if (!candidate) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="bg-white w-full max-w-3xl rounded-lg shadow-lg overflow-auto max-h-[80vh]">
-        <div className="flex items-center justify-between p-4 border-b">
-          <div>
-            <div className="text-lg font-semibold">{candidate.name}</div>
-            <div className="text-sm text-gray-500">{candidate.email}</div>
-          </div>
-          <div className="flex gap-2 items-center">
-            <div className="text-sm text-blue-600 font-bold">
-              {(candidate.score || 0).toFixed(3)}
-            </div>
-            <button onClick={onClose} className="px-3 py-1 bg-gray-100 rounded">
-              Close
-            </button>
-          </div>
-        </div>
+      <div className="bg-white p-6 rounded-lg max-w-lg w-full">
+        <h2 className="text-xl font-bold">{candidate.name}</h2>
+        <p className="text-sm text-gray-500">{candidate.email}</p>
 
-        <div className="p-4 space-y-4">
-          <div>
-            <div className="font-medium text-gray-700">Skills</div>
-            <div className="flex flex-wrap gap-2 mt-2">
-              {(candidate.skills || []).map((s) => (
-                <span
-                  key={s}
-                  className="text-xs bg-gray-100 px-2 py-1 rounded-full"
-                >
-                  {s}
-                </span>
-              ))}
-            </div>
+        {/* AI Section */}
+        {aiData && !aiData.error && (
+          <div className="mt-4 p-3 bg-blue-50 rounded">
+            <p className="font-bold">AI Score: {aiData.score}/100</p>
+            <p className="text-sm text-gray-600">{aiData.summary}</p>
           </div>
+        )}
+        {aiData?.error && (
+          <p className="text-red-600 text-sm">⚠ {aiData.error}</p>
+        )}
 
-          <div>
-            <div className="font-medium text-gray-700">Experience</div>
-            <div className="text-sm text-gray-600">
-              {candidate.years_experience || 0} years
-            </div>
-          </div>
-
-          <div>
-            <div className="font-medium text-gray-700">Education</div>
-            <div className="text-sm text-gray-600">
-              {candidate.education || "N/A"}
-            </div>
-          </div>
-
-          <div>
-            <div className="font-medium text-gray-700">Notes / Summary</div>
-            <div className="text-sm text-gray-600 whitespace-pre-line">
-              {candidate.notes || "—"}
-            </div>
-          </div>
-
-          {candidate.resume && (
-            <div>
-              <div className="font-medium text-gray-700">Resume</div>
-              <div className="text-sm text-gray-600">
-                <a
-                  href={candidate.resume}
-                  className="text-indigo-600 underline"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Open resume
-                </a>
-              </div>
-            </div>
-          )}
-        </div>
+        <button
+          onClick={onClose}
+          className="mt-4 bg-gray-200 px-3 py-1 rounded hover:bg-gray-300"
+        >
+          Close
+        </button>
       </div>
     </div>
   );
