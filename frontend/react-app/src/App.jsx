@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import CandidateList from "./components/CandidateList";
+import WeightConfig from "./components/WeightConfig";
 
 // Use environment variable or fallback to /api
 const API_BASE = import.meta.env.VITE_API_BASE || "/api";
@@ -8,6 +9,8 @@ export default function App() {
   const [candidates, setCandidates] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [showWeights, setShowWeights] = useState(false);
+  const [weights, setWeights] = useState(null);
 
   // Load sample data
   async function loadSample() {
@@ -40,10 +43,14 @@ export default function App() {
     setLoading(true);
     setError(null);
     try {
+      const payload = { applicants: candidates };
+      if (weights) {
+        payload.weights = weights;
+      }
       const resp = await fetch(`${API_BASE}/rank`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ applicants: candidates }),
+        body: JSON.stringify(payload),
       });
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
       const data = await resp.json();
@@ -74,6 +81,14 @@ export default function App() {
 
           <div className="flex items-center gap-3">
             <button
+              onClick={() => setShowWeights(true)}
+              className="px-4 py-2 bg-white border rounded-md hover:shadow"
+              disabled={loading}
+            >
+              Configure Weights
+            </button>
+
+            <button
               onClick={loadSample}
               className="px-4 py-2 bg-white border rounded-md hover:shadow"
               disabled={loading}
@@ -83,7 +98,7 @@ export default function App() {
 
             <button
               onClick={handleRank}
-              className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
               disabled={loading || candidates.length === 0}
             >
               {loading ? "Working..." : "Rank Applicants"}
@@ -95,6 +110,13 @@ export default function App() {
 
         <CandidateList candidates={candidates} />
       </div>
+
+      {showWeights && (
+        <WeightConfig
+          onApply={(w) => setWeights(w)}
+          onClose={() => setShowWeights(false)}
+        />
+      )}
     </div>
   );
 }

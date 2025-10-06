@@ -6,7 +6,7 @@ export default function CandidateCard({ candidate, rank, onOpen }) {
   return (
     <div className="bg-white rounded-2xl shadow-md p-5 flex items-center justify-between hover:shadow-lg transition">
       <div className="flex items-center gap-4">
-        <div className="w-12 h-12 rounded-full bg-gradient-to-r from-indigo-100 to-blue-100 flex items-center justify-center text-indigo-700 font-semibold">
+        <div className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-100 to-cyan-100 flex items-center justify-center text-blue-700 font-semibold">
           #{rank}
         </div>
         <div>
@@ -45,7 +45,7 @@ export default function CandidateCard({ candidate, rank, onOpen }) {
         </div>
         <button
           onClick={onOpen}
-          className="bg-indigo-600 text-white px-3 py-1 rounded-md hover:bg-indigo-700"
+          className="bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700"
         >
           View
         </button>
