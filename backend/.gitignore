@@ -1,2 +1,6 @@
-.venv/
-.env/
+__pycache__/            # Python cache
+*.py[cod]               # compiled Python files
+venv/                   # local virtual environment
+.env                    # environment variables (secrets)
+.env.local              # local overrides
+*.log                   # log files
