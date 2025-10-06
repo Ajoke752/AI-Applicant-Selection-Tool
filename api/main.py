@@ -4,27 +4,31 @@ from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
 from pathlib import Path
 import json
-from openai import OpenAI
 import os
+from openai import OpenAI
 from dotenv import load_dotenv
 
-# Load OpenAI API key
+# Load OpenAI key if running locally
 load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 app = FastAPI(title="AI Applicant Selection Tool - Ranking API")
 
-# Enable CORS for React frontend
+# CORS for frontend (replace with your Vercel frontend URL if needed)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Path to sample data
-SAMPLE_PATH = Path(__file__).parent / "applicants.json"
+# Paths
+BASE_DIR = Path(__file__).parent
+SAMPLE_PATH = BASE_DIR / "applicants.json"
+DATA_FILE = BASE_DIR / "ai_scores.json"
+
+# Load sample applicants
 try:
     SAMPLE_APPLICANTS = json.loads(SAMPLE_PATH.read_text(encoding="utf-8"))
 except Exception:
@@ -34,6 +38,7 @@ except Exception:
 class Applicant(BaseModel):
     id: Optional[str]
     name: Optional[str]
+    email: Optional[str]
     skills: Optional[List[str]] = []
     years_experience: Optional[float] = 0
     education: Optional[str] = None
@@ -106,8 +111,6 @@ def score_applicant(applicant: Applicant):
     return {"name": scored.get("name"), "score": scored.get("score")}
 
 # ---------- AI SCORING ----------
-DATA_FILE = Path("ai_scores.json")
-
 def load_scores():
     if DATA_FILE.exists():
         with open(DATA_FILE, "r") as f:
@@ -123,7 +126,6 @@ def ai_score(req: AIScoreRequest):
     scores = load_scores()
     key = req.candidate.email or req.candidate.name
 
-    # Return cached result if available
     if key in scores:
         return scores[key]
 
@@ -133,26 +135,24 @@ def ai_score(req: AIScoreRequest):
             messages=[
                 {"role": "system", "content": "You are an AI recruiter assistant."},
                 {"role": "user", "content": f"""
-                Job Description: {req.job_description}
+Job Description: {req.job_description}
 
-                Candidate:
-                Name: {req.candidate.name}
-                Skills: {req.candidate.skills}
-                Experience: {req.candidate.years_experience} years
-                Education: {req.candidate.education}
-                Notes: {req.candidate.notes}
+Candidate:
+Name: {req.candidate.name}
+Skills: {req.candidate.skills}
+Experience: {req.candidate.years_experience} years
+Education: {req.candidate.education}
+Notes: {req.candidate.notes}
 
-                Please return JSON like:
-                {{ "score": 85, "summary": "Strong React developer with ML skills" }}
-                """}
+Please return JSON like:
+{{ "score": 85, "summary": "Strong React developer with ML skills" }}
+"""}
             ],
             temperature=0.3,
         )
 
         raw = response.choices[0].message.content.strip()
         data = json.loads(raw)
-
-        # Save and return
         scores[key] = data
         save_scores(scores)
         return data
@@ -161,16 +161,11 @@ def ai_score(req: AIScoreRequest):
 
 @app.get("/sample-data")
 def get_sample_data():
-    file_path = Path(__file__).parent / "applicants.json"
-    print("DEBUG: Looking for file at:", file_path)  # check path
-
-    if not file_path.exists():
-        return {"error": f"File not found at {file_path}"}
-
+    if not SAMPLE_PATH.exists():
+        return {"error": f"File not found at {SAMPLE_PATH}"}
     try:
-        with open(file_path, "r", encoding="utf-8") as f:
+        with open(SAMPLE_PATH, "r", encoding="utf-8") as f:
             data = json.load(f)
-        print("DEBUG: Loaded data:", data[:2])  # show first 2 items
         return data
     except Exception as e:
         return {"error": str(e)}
