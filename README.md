@@ -1,146 +1,198 @@
-# AI-Driven Applicant Selection Tool
 
-Overview
+# 🚀 AI-Driven Applicant Selection Tool
 
-- Prototype that analyzes applicant data and returns ranked candidate recommendations for LSETF/PLP programs.
-- Tech: React + Vite frontend, FastAPI backend (scoring API).
-- Goals: demonstrate data analysis, candidate ranking, recommendation API, and LMS integration readiness.
+An AI-powered platform that analyzes applicant data, ranks candidates, and provides smart recommendations for recruitment and upskilling programs.  
+This project was built as part of a hackathon challenge for **PLP**.
 
-Quick start (Windows)
+---
 
-1. Backend
+## 📌 Features
+- 📂 Load applicant data (from JSON or database)
+- ⚖ Candidate ranking based on **skills, experience, and education**
+- 🤖 AI-powered evaluation using **OpenAI GPT**
+- 🎨 Modern frontend with React + TailwindCSS
+- 🔌 Backend powered by **FastAPI**
+- 📊 Export results (CSV) for reporting
+- 🔗 Ready for integration with future **LMS platforms**
 
-```powershell
-cd "c:\Users\USER\Desktop\Hackathon Projects\Nigeria Hackathon Project\AI Applicant Selection Tool\backend"
-python -m venv .venv
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process -Force
-.\.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
-.\.venv\Scripts\python -m uvicorn main:app --reload --port 8000
+---
+
+## 🛠 Tech Stack
+- **Frontend:** React (Vite), TailwindCSS, Framer Motion  
+- **Backend:** FastAPI (Python)  
+- **AI Integration:** OpenAI GPT-4o-mini  
+- **Storage:** JSON (local) → extendable to DB later  
+
+---
+
+## 📂 Project Structure
+```
+AI-Applicant-Selection-Tool/
+│── backend/              # FastAPI backend
+│   ├── main.py           # API routes & AI logic
+│   ├── applicants.json   # Sample applicant dataset
+│   └── ai_scores.json    # Cached AI scoring results
+│
+│── frontend/             # React frontend
+│   ├── src/
+│   │   ├── App.jsx
+│   │   ├── components/
+│   │   │   ├── CandidateList.jsx
+│   │   │   ├── CandidateCard.jsx
+│   │   │   ├── CandidateModal.jsx
+│   │   │   └── Filters.jsx
+│   │   └── main.jsx
+│   └── package.json
+│
+└── README.md
+```
+---
+
+## ⚡ Installation & Setup
+
+### 1️⃣ Clone Repository
+```bash
+git clone https://github.com/Ajoke752/Hackathon3-project.git
+cd AI-Applicant-Selection-Tool
 ```
 
-2. Frontend
+---
 
-```powershell
-cd "c:\Users\USER\Desktop\Hackathon Projects\Nigeria Hackathon Project\AI Applicant Selection Tool\frontend\react-app"
+### 2️⃣ Backend Setup (FastAPI)
+```bash
+cd backend
+# (create virtual environment)
+python -m venv venv
+venv\Scripts\activate     # on Windows
+source venv/bin/activate  # on Mac/Linux
+
+# install dependencies
+pip install fastapi uvicorn python-dotenv openai
+```
+
+Create a **`.env`** file inside `backend/`:
+```
+OPENAI_API_KEY=your Api Key
+
+```
+
+Run backend:
+```bash
+uvicorn main:app --reload
+```
+
+Backend runs at 👉 http://127.0.0.1:8000  
+Docs available at 👉 http://127.0.0.1:8000/docs
+
+---
+
+### 3️⃣ Frontend Setup (React + Vite)
+```bash
+cd frontend
 npm install
-npm run dev
-# Open http://localhost:5173
 ```
 
-Project layout (important files)
-
-- backend/
-  - main.py — FastAPI app & scorer
-  - requirements.txt — Python deps
-  - sample-data/applicants.json — demo dataset
-- frontend/react-app/
-  - src/App.jsx — app shell and actions (Load Sample, Rank Applicants)
-  - src/components/ — UI components (CandidateList, Card, Filters, Modal, ExportCSV)
-  - src/data/sample-applicants.json — optional offline sample data
-  - postcss.config.cjs, tailwind.config.cjs, package.json, vite.config.js
-
-API (dev)
-
-- Base: http://localhost:8000
-- GET / -> health check
-- GET /rank/sample -> returns scored sample applicants: { "ranked": [ ... ] }
-- POST /rank -> accepts { applicants, requiredSkills?, weights? } and returns { "ranked": [ ... ] }
-- POST /score -> score a single applicant
-
-Notes
-
-- Frontend starts empty. Use "Load Sample" to fetch /rank/sample, then "Rank Applicants" to post current applicants to /rank and update scores.
-- Backend includes CORS for the Vite dev server; update origins in main.py if you run frontend on a different host/port.
-- If Tailwind/PostCSS errors occur, ensure `postcss.config.cjs` exists (CommonJS) and restart the dev server.
-
-Troubleshooting
-
-- uvicorn not found: activate venv and install requirements (use venv python to run uvicorn).
-- White page / missing styles: check Vite terminal and browser console for PostCSS or Tailwind errors; ensure postcss.config.cjs and tailwind.config.cjs are correct.
-- /rank/sample 404: confirm backend `main.py` includes the route and `backend/sample-data/applicants.json` exists and is valid JSON.
-
-Next steps (suggested)
-
-- Replace heuristic scorer with ML model trained on labelled data.
-- Add authentication and persistent storage.
-- Add CI to run backend tests and frontend checks.
-- Prepare an LMS connector (webhook or REST sync) for integration.
-
-License
-
-- Prototype for hackathon/demo use. Add security, tests and audits before production.
-
-````// filepath: c:\Users\USER\Desktop\Hackathon Projects\Nigeria Hackathon Project\AI Applicant Selection Tool\frontend\react-app\README.md
-# AI-Driven Applicant Selection Tool
-
-Overview
-- Prototype that analyzes applicant data and returns ranked candidate recommendations for LSETF/PLP programs.
-- Tech: React + Vite frontend, FastAPI backend (scoring API).
-- Goals: demonstrate data analysis, candidate ranking, recommendation API, and LMS integration readiness.
-
-Quick start (Windows)
-
-1. Backend
-```powershell
-cd "c:\Users\USER\Desktop\Hackathon Projects\Nigeria Hackathon Project\AI Applicant Selection Tool\backend"
-python -m venv .venv
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process -Force
-.\.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
-.\.venv\Scripts\python -m uvicorn main:app --reload --port 8000
-````
-
-2. Frontend
-
-```powershell
-cd "c:\Users\USER\Desktop\Hackathon Projects\Nigeria Hackathon Project\AI Applicant Selection Tool\frontend\react-app"
-npm install
+Run frontend:
+```bash
 npm run dev
-# Open http://localhost:5173
 ```
 
-Project layout (important files)
+Frontend runs at 👉 http://127.0.0.1:5173
 
-- backend/
-  - main.py — FastAPI app & scorer
-  - requirements.txt — Python deps
-  - sample-data/applicants.json — demo dataset
-- frontend/react-app/
-  - src/App.jsx — app shell and actions (Load Sample, Rank Applicants)
-  - src/components/ — UI components (CandidateList, Card, Filters, Modal, ExportCSV)
-  - src/data/sample-applicants.json — optional offline sample data
-  - postcss.config.cjs, tailwind.config.cjs, package.json, vite.config.js
+---
 
-API (dev)
+## 🔗 API Endpoints
 
-- Base: http://localhost:8000
-- GET / -> health check
-- GET /rank/sample -> returns scored sample applicants: { "ranked": [ ... ] }
-- POST /rank -> accepts { applicants, requiredSkills?, weights? } and returns { "ranked": [ ... ] }
-- POST /score -> score a single applicant
+### `GET /sample-data`
+Returns sample applicants from `applicants.json`.
 
-Notes
+**Response Example:**
+```json
+[
+  {
+    "id": "1",
+    "name": "Alice Johnson",
+    "skills": ["Python", "FastAPI", "SQL"],
+    "years_experience": 5,
+    "education": "Bachelors",
+    "notes": "Strong backend developer"
+  }
+]
+```
 
-- Frontend starts empty. Use "Load Sample" to fetch /rank/sample, then "Rank Applicants" to post current applicants to /rank and update scores.
-- Backend includes CORS for the Vite dev server; update origins in main.py if you run frontend on a different host/port.
-- If Tailwind/PostCSS errors occur, ensure `postcss.config.cjs` exists (CommonJS) and restart the dev server.
+---
 
-Troubleshooting
+### `POST /rank`
+Ranks applicants using weighted scoring.  
+Request body:
+```json
+{
+  "applicants": [...],
+  "requiredSkills": ["Python", "SQL"],
+  "weights": { "skills": 0.5, "experience": 0.3, "education": 0.2 }
+}
+```
 
-- uvicorn not found: activate venv and install requirements (use venv python to run uvicorn).
-- White page / missing styles: check Vite terminal and browser console for PostCSS or Tailwind errors; ensure postcss.config.cjs and tailwind.config.cjs are correct.
-- /rank/sample 404: confirm backend `main.py` includes the route and `backend/sample-data/applicants.json` exists and is valid JSON.
+Response:
+```json
+{
+  "ranked": [
+    { "name": "Alice Johnson", "score": 0.83 }
+  ]
+}
+```
 
-Next steps (suggested)
+---
 
-- Replace heuristic scorer with ML model trained on labelled data.
-- Add authentication and persistent storage.
-- Add CI to run backend tests and frontend checks.
-- Prepare an LMS connector (webhook or REST sync) for integration.
+### `POST /ai-score`
+Uses OpenAI GPT to evaluate a candidate.
 
-License
+Request:
+```json
+{
+  "candidate": {
+    "name": "Bob Smith",
+    "skills": ["React", "JavaScript"],
+    "years_experience": 3,
+    "education": "Masters",
+    "notes": "Frontend specialist"
+  },
+  "job_description": "Looking for a frontend engineer with strong React skills."
+}
+```
 
-- Prototype for hackathon/demo use. Add security, tests and audits before production.
+Response:
+```json
+{
+  "score": 85,
+  "summary": "Strong React developer with excellent frontend experience."
+}
+```
+
+---
+
+## 🎨 Frontend UI Features
+- Candidate list with ranking display
+- Modal for viewing detailed candidate profile
+- Filters for skills, experience, and education
+- CSV export of candidate rankings
+- Smooth UI animations with **Framer Motion**
+
+---
+
+## 🚀 Future Improvements
+- ✅ Database integration (PostgreSQL / MongoDB)
+- ✅ Authentication (admin / recruiter login)
+- ✅ Integration with LMS APIs
+- ✅ Resume parsing with AI
+- ✅ Advanced analytics dashboards
+
+---
+
+## 👩‍💻 Contributors
+- **Ajoke Abdulrasaq** – Hackathon Project Developer
+
+---
+
+## 📜 License
+MIT License – free to use and modify.

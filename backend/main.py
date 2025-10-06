@@ -8,11 +8,13 @@ from openai import OpenAI
 import os
 from dotenv import load_dotenv
 
+# Load OpenAI API key
 load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
 app = FastAPI(title="AI Applicant Selection Tool - Ranking API")
 
-# CORS so frontend (Vite) can call the API during dev
+# Enable CORS for React frontend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
@@ -21,13 +23,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Load sample data if present
-SAMPLE_PATH = Path(__file__).parent / "sample-data" / "applicants.json"
+# Path to sample data
+SAMPLE_PATH = Path(__file__).parent / "applicants.json"
 try:
     SAMPLE_APPLICANTS = json.loads(SAMPLE_PATH.read_text(encoding="utf-8"))
 except Exception:
     SAMPLE_APPLICANTS = []
 
+# ---------- MODELS ----------
 class Applicant(BaseModel):
     id: Optional[str]
     name: Optional[str]
@@ -43,6 +46,11 @@ class RankRequest(BaseModel):
     requiredSkills: Optional[List[str]] = []
     weights: Optional[Dict[str, float]] = None
 
+class AIScoreRequest(BaseModel):
+    candidate: Applicant
+    job_description: str
+
+# ---------- HELPER FUNCTIONS ----------
 def education_score(level: Optional[str]) -> float:
     mapping = {"phd": 1.0, "masters": 0.9, "bachelors": 0.7, "diploma": 0.5, "none": 0.2}
     if not level:
@@ -76,6 +84,7 @@ def score_applicants(applicants, required_skills=None, weights=None):
     ranked.sort(key=lambda x: x.get("score", 0), reverse=True)
     return ranked
 
+# ---------- ROUTES ----------
 @app.get("/")
 def root():
     return {"service": "AI Applicant Selection Tool - Ranking API"}
@@ -93,51 +102,11 @@ def rank_sample():
 
 @app.post("/score")
 def score_applicant(applicant: Applicant):
-    # single-applicant scoring (keeps compatibility with earlier endpoint)
     scored = score_single(applicant.dict(), [], {"skills": 0.5, "experience": 0.3, "education": 0.2})
-    return {"name": scored.get("name"), "score": scored.get("score")
-            }
-class AIScoreRequest(BaseModel):
-    candidate: Applicant
-    job_description: str
+    return {"name": scored.get("name"), "score": scored.get("score")}
 
-@app.post("/ai-score")
-def ai_score(req: AIScoreRequest):
-    """
-    Use GPT to analyze a candidate and return a smart score + summary
-    """
-    try:
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {"role": "system", "content": "You are an AI recruiter assistant."},
-                {"role": "user", "content": f"""
-                Job Description: {req.job_description}
-
-                Candidate:
-                Name: {req.candidate.name}
-                Skills: {req.candidate.skills}
-                Experience: {req.candidate.years_experience} years
-                Education: {req.candidate.education}
-                Notes: {req.candidate.notes}
-
-                Please return JSON like:
-                {{ "score": number (0-100), "summary": "short evaluation" }}
-                """}
-            ],
-            temperature=0.3,
-        )
-
-        raw = response.choices[0].message.content.strip()
-
-        import json
-        data = json.loads(raw)  # parse JSON from AI
-        return data
-    except Exception as e:
-        return {"error": str(e)}
-    
-# Simple persistent storage of AI scores
-    DATA_FILE = Path("ai_scores.json")
+# ---------- AI SCORING ----------
+DATA_FILE = Path("ai_scores.json")
 
 def load_scores():
     if DATA_FILE.exists():
@@ -148,7 +117,6 @@ def load_scores():
 def save_scores(scores):
     with open(DATA_FILE, "w") as f:
         json.dump(scores, f, indent=2)
-
 
 @app.post("/ai-score")
 def ai_score(req: AIScoreRequest):
@@ -187,8 +155,22 @@ def ai_score(req: AIScoreRequest):
         # Save and return
         scores[key] = data
         save_scores(scores)
-
         return data
     except Exception as e:
         return {"error": str(e)}
-        
+
+@app.get("/sample-data")
+def get_sample_data():
+    file_path = Path(__file__).parent / "applicants.json"
+    print("DEBUG: Looking for file at:", file_path)  # check path
+
+    if not file_path.exists():
+        return {"error": f"File not found at {file_path}"}
+
+    try:
+        with open(file_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        print("DEBUG: Loaded data:", data[:2])  # show first 2 items
+        return data
+    except Exception as e:
+        return {"error": str(e)}

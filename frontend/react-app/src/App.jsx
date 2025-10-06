@@ -11,13 +11,14 @@ export default function App() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("http://localhost:8000/rank/sample");
+      const res = await fetch("http://127.0.0.1:8000/sample-data");
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-      // backend /rank/sample returns already-scored list in `ranked`
-      setCandidates(data.ranked || []);
+      setCandidates(data || []); // since /sample-data just returns raw list
     } catch (e) {
-      setError("Could not load sample candidates. Ensure backend is running at http://localhost:8000");
+      setError(
+        "Could not load sample candidates. Ensure backend is running at http://localhost:8000"
+      );
       console.error(e);
     } finally {
       setLoading(false);
@@ -26,13 +27,15 @@ export default function App() {
 
   async function handleRank() {
     if (!candidates || candidates.length === 0) {
-      setError("No applicants to rank. Load sample data or provide applicants first.");
+      setError(
+        "No applicants to rank. Load sample data or provide applicants first."
+      );
       return;
     }
     setLoading(true);
     setError(null);
     try {
-      const resp = await fetch("http://localhost:8000/rank", {
+      const resp = await fetch("http://127.0.0.1:8000/rank", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ applicants: candidates }),
@@ -41,7 +44,9 @@ export default function App() {
       const data = await resp.json();
       setCandidates(data.ranked || []);
     } catch (e) {
-      setError("Ranking failed. Ensure backend is running and CORS is enabled.");
+      setError(
+        "Ranking failed. Ensure backend is running and CORS is enabled."
+      );
       console.error(e);
     } finally {
       setLoading(false);
@@ -53,8 +58,13 @@ export default function App() {
       <div className="max-w-5xl mx-auto">
         <header className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">AI Applicant Selection Tool</h1>
-            <p className="text-sm text-gray-600">Prototype: analyze applicants and generate ranked recommendations for your organization.</p>
+            <h1 className="text-2xl font-bold text-gray-800">
+              AI Applicant Selection Tool
+            </h1>
+            <p className="text-sm text-gray-600">
+              Prototype: analyze applicants and generate ranked recommendations
+              for your organization.
+            </p>
           </div>
 
           <div className="flex items-center gap-3">
