@@ -28,12 +28,13 @@ This project was built as part of a hackathon challenge for **PLP**.
 ## 📂 Project Structure
 ```
 AI-Applicant-Selection-Tool/
-│── backend/              # FastAPI backend
-│   ├── main.py           # API routes & AI logic
-│   ├── applicants.json   # Sample applicant dataset
-│   └── ai_scores.json    # Cached AI scoring results
 │
-│── frontend/             # React frontend
+├── api/
+│   ├── main.py           # FastAPI backend
+│   ├── applicants.json   # Sample data
+│   └── ai_scores.json    # Cached AI scores
+│
+├── frontend/
 │   ├── src/
 │   │   ├── App.jsx
 │   │   ├── components/
@@ -44,7 +45,8 @@ AI-Applicant-Selection-Tool/
 │   │   └── main.jsx
 │   └── package.json
 │
-└── README.md
+├── requirements.txt      # Python dependencies
+└── vercel.json           # Vercel routing configuration
 ```
 ---
 
@@ -52,7 +54,7 @@ AI-Applicant-Selection-Tool/
 
 ### 1️⃣ Clone Repository
 ```bash
-git clone https://github.com/Ajoke752/Hackathon3-project.git
+git clone https://github.com/Ajoke752/AI-Applicant-Selection-Tool.git
 ```
 
 ---
