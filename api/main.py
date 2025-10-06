@@ -73,21 +73,76 @@ def skills_score(skills: List[str], required: List[str]) -> float:
     matched = sum(1 for s in skills if s in required)
     return matched / max(1, len(required))
 
+def assessment_score(scores: Optional[Dict[str, float]]) -> float:
+    if not scores:
+        return 0.5
+    values = list(scores.values())
+    if not values:
+        return 0.5
+    avg = sum(values) / len(values)
+    return min(1.0, avg / 100.0)
+
+def portfolio_score(has_portfolio: bool) -> float:
+    return 1.0 if has_portfolio else 0.3
+
+def cover_letter_score(cover_letter: Optional[str]) -> float:
+    if not cover_letter:
+        return 0.3
+    length = len(cover_letter.strip())
+    if length > 200:
+        return 1.0
+    elif length > 100:
+        return 0.7
+    elif length > 50:
+        return 0.5
+    return 0.3
+
 def score_single(a: Dict[str, Any], required_skills: List[str], weights: Dict[str, float]) -> Dict[str, Any]:
     skills = a.get("skills", []) or []
     exp = a.get("years_experience", 0) or 0
     edu = a.get("education", None)
+    assessment = a.get("assessment_scores", None)
+    portfolio = a.get("portfolio_present", False)
+    cover_letter = a.get("cover_letter", None)
+
     s_skills = skills_score(skills, required_skills)
     s_exp = min(1.0, float(exp) / 10.0)
     s_edu = education_score(edu)
-    score = s_skills * weights["skills"] + s_exp * weights["experience"] + s_edu * weights["education"]
+    s_assessment = assessment_score(assessment)
+    s_portfolio = portfolio_score(portfolio)
+    s_cover = cover_letter_score(cover_letter)
+
+    score = (
+        s_skills * weights["skills"] +
+        s_exp * weights["experience"] +
+        s_edu * weights["education"] +
+        s_assessment * weights["assessment"] +
+        s_portfolio * weights["portfolio"] +
+        s_cover * weights["cover_letter"]
+    )
+
     out = dict(a)
     out["score"] = round(score, 3)
+    out["score_breakdown"] = {
+        "skills": round(s_skills, 3),
+        "experience": round(s_exp, 3),
+        "education": round(s_edu, 3),
+        "assessment": round(s_assessment, 3),
+        "portfolio": round(s_portfolio, 3),
+        "cover_letter": round(s_cover, 3)
+    }
     return out
 
 def score_applicants(applicants, required_skills=None, weights=None):
     required_skills = required_skills or []
-    default_weights = {"skills": 0.5, "experience": 0.3, "education": 0.2}
+    default_weights = {
+        "skills": 0.25,
+        "experience": 0.2,
+        "education": 0.15,
+        "assessment": 0.25,
+        "portfolio": 0.1,
+        "cover_letter": 0.05
+    }
     if weights:
         default_weights.update(weights)
     ranked = [score_single(a if isinstance(a, dict) else a.dict(), required_skills, default_weights) for a in applicants]
