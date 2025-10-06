@@ -6,10 +6,10 @@
       "use": "@vercel/static-build",
       "config": { "distDir": "dist" }
     },
-    { "src": "api/*.py", "use": "@vercel/python" }
+    { "src": "api/main.py", "use": "@vercel/python" }
   ],
   "routes": [
-    { "src": "/api/(.*)", "dest": "/api/main.py" },
+    { "src": "/api/(.*)", "dest": "api/main.py" },
     { "src": "/(.*)", "dest": "/frontend/dist/$1" }
   ]
 }
