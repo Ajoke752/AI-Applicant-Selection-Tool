@@ -54,7 +54,7 @@ AI-Applicant-Selection-Tool/
 
 ### 1️⃣ Clone Repository
 ```bash
-git clone https://github.com/Ajoke752/Hackathon3-project.git
+git clone https://github.com/Ajoke752/AI-Applicant-Selection-Tool.git
 ```
 
 ---
