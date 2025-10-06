@@ -12,8 +12,7 @@ from dotenv import load_dotenv
 app = FastAPI(title="AI Applicant Selection Tool - Ranking API")
 
 # Load OpenAI key if running locally
-load_dotenv()
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
 
 
 
@@ -26,6 +25,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+load_dotenv()
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 # Paths
 BASE_DIR = Path(__file__).parent
 SAMPLE_PATH = BASE_DIR / "applicants.json"
