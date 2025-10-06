@@ -8,11 +8,14 @@ import os
 from openai import OpenAI
 from dotenv import load_dotenv
 
+
+app = FastAPI(title="AI Applicant Selection Tool - Ranking API")
+
 # Load OpenAI key if running locally
 load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-app = FastAPI(title="AI Applicant Selection Tool - Ranking API")
+
 
 # CORS for frontend (replace with your Vercel frontend URL if needed)
 app.add_middleware(
