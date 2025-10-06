@@ -5,6 +5,9 @@ import Pagination from "./Pagination";
 import CandidateModal from "./CandidateModal";
 import ExportCSV from "./ExportCSV";
 
+// Backend API base (Vercel or local)
+const API_BASE = import.meta.env.VITE_API_BASE || "/api";
+
 export default function CandidateList({ candidates = [] }) {
   const [query, setQuery] = useState("");
   const [requiredSkills, setRequiredSkills] = useState([]);
@@ -52,12 +55,33 @@ export default function CandidateList({ candidates = [] }) {
   const pageCount = Math.max(1, Math.ceil(total / perPage));
   const visible = filtered.slice((page - 1) * perPage, page * perPage);
 
+  // Reset filters
   function resetFilters() {
     setQuery("");
     setRequiredSkills([]);
     setMinExp(0);
     setSortBy("score");
     setPage(1);
+  }
+
+  // Fetch ranked candidates from backend
+  async function rankCandidates() {
+    if (!candidates || candidates.length === 0) return;
+
+    try {
+      const resp = await fetch(`${API_BASE}/rank`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ applicants: candidates }),
+      });
+
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const data = await resp.json();
+      return data.ranked || [];
+    } catch (e) {
+      console.error("Ranking error:", e);
+      return [];
+    }
   }
 
   return (
