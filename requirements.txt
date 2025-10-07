@@ -1,10 +1,5 @@
-
 fastapi
 uvicorn
 pydantic
-pytest
-pandas
-# optional helpers
-python-multipart
 python-dotenv
-# ...existing code...
+openai
